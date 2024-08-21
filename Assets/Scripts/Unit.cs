@@ -11,6 +11,12 @@ public class Unit : MonoBehaviour
     private const string isWalking = "IsWalking";
     [SerializeField] private Animator unitAnimator;
 
+
+    private void Awake()
+    {
+        targetDirection = transform.position;
+    }
+
     private void Update()
     {             
         float moveSpeed = 4f;
@@ -30,16 +36,11 @@ public class Unit : MonoBehaviour
         else
         {
             unitAnimator.SetBool(isWalking, false);
-        }
-
-        if (Input.GetMouseButtonDown(0))
-        {
-            Move(MouseWorld.GetPosition());
-        }
+        }       
     }
 
 
-    private void Move(Vector3 targetDirection)
+    public void Move(Vector3 targetDirection)
     {
         this.targetDirection = targetDirection;  
     }
