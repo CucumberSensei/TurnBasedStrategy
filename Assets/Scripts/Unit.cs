@@ -5,43 +5,58 @@ using Unity.Mathematics;
 using UnityEngine;
 
 public class Unit : MonoBehaviour
-{
+{  
     
-    private Vector3 targetDirection;
-    private const string isWalking = "IsWalking";
-    [SerializeField] private Animator unitAnimator;
-
+    private GridPosition gridPosition;
+    private GridPosition formerGridPosition;
+    private MoveAction moveAction;
+    private SpinAction spinAction;
+    [SerializeField] private BaseAction[] actionsArray;
 
     private void Awake()
     {
-        targetDirection = transform.position;
+        moveAction = GetComponent<MoveAction>();
+        spinAction = GetComponent<SpinAction>();
+        actionsArray = GetComponents<BaseAction>();
+    }
+
+    private void Start()
+    {
+        gridPosition = LevelGrid.Instance.GetGridPosition(transform.position);
+        LevelGrid.Instance.AddUnitAtGridPosition(this, gridPosition); 
     }
 
     private void Update()
-    {             
-        float moveSpeed = 4f;
-        float stoppingDistance = .1f;
+    {                    
+        GridPosition newGridPosition = LevelGrid.Instance.GetGridPosition(transform.position);
 
-        if (Vector3.Distance(transform.position, targetDirection) > stoppingDistance)
+        if(newGridPosition != gridPosition)
         {
-            Vector3 moveDirection = (targetDirection - transform.position).normalized;
-            transform.position += moveDirection.normalized * moveSpeed * Time.deltaTime;
-
-            unitAnimator.SetBool(isWalking, true);
-
-            float unitRotationSpeed = 20f;
-            transform.forward = Vector3.Lerp(transform.forward, moveDirection, Time.deltaTime * unitRotationSpeed);
-
+            LevelGrid.Instance.UnitMove(this, gridPosition, newGridPosition);
+            gridPosition = newGridPosition;
         }
-        else
-        {
-            unitAnimator.SetBool(isWalking, false);
-        }       
     }
 
-
-    public void Move(Vector3 targetDirection)
+    public MoveAction GetMoveAction()
     {
-        this.targetDirection = targetDirection;  
+        return moveAction;
     }
+
+    public SpinAction GetSpinAction()
+    {
+        return spinAction;
+    }
+
+    public GridPosition GetGridPosition()
+    {
+        return gridPosition;
+    }
+
+    public BaseAction[] GetActionsArray()
+    {
+        return actionsArray;
+    }
+
+
+    
 }
