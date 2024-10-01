@@ -14,10 +14,7 @@ public class Unit : MonoBehaviour
     public static event EventHandler OnAnyUnitDie;
 
     
-    private GridPosition gridPosition;
-    private MoveAction moveAction;
-    private SpinAction spinAction;
-    private ShootAction shotAction;
+    private GridPosition gridPosition;  
     private HealthSystem healthSystem;
     [SerializeField]private int actionPoints = MAX_ACTION_POINTS;
     [SerializeField] private Transform actoinCameraSpot;
@@ -25,10 +22,7 @@ public class Unit : MonoBehaviour
     [SerializeField] private bool isEnemy;
 
     private void Awake()
-    {
-        moveAction = GetComponent<MoveAction>();
-        spinAction = GetComponent<SpinAction>();
-        shotAction = GetComponent<ShootAction>();
+    {        
         actionsArray = GetComponents<BaseAction>();
         healthSystem = GetComponent<HealthSystem>();
     }
@@ -100,19 +94,16 @@ public class Unit : MonoBehaviour
         OnAnyActionPointChange?.Invoke(this, new EventArgs());
     }
 
-    public MoveAction GetMoveAction()
+    public T GetAction<T>() where T : BaseAction
     {
-        return moveAction;
-    }
-
-    public SpinAction GetSpinAction()
-    {
-        return spinAction;
-    }
-
-    public ShootAction GetShootAction()
-    {
-        return shotAction;
+        foreach (BaseAction baseAction in actionsArray)
+        {
+            if(baseAction is T)
+            {
+                return (T)baseAction;
+            }
+        }
+        return null;
     }
 
     public GridPosition GetGridPosition()

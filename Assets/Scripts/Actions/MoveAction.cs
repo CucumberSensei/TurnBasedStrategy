@@ -105,7 +105,7 @@ public class MoveAction : BaseAction
 
     public override EnemyAIActionScore GetEnemyAIActionScore(GridPosition gridPosition)
     {
-        ShootAction shootAction = unit.GetShootAction();
+        ShootAction shootAction = unit.GetAction<ShootAction>();
 
         List<GridPosition> validShootingGridPositonList = shootAction.GetValidActionGridPositionList(gridPosition);
 
