@@ -2,14 +2,15 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class MoveAction : BaseAction
 {
+    public EventHandler OnMoveStart;
+    public EventHandler OnMoveEnd;
+
     private Vector3 targetDirection;
-    private const string isWalking = "IsWalking";
-    private Action onMoveComplete;
-    
-    [SerializeField] private Animator unitAnimator;
+              
     [SerializeField] private int maxGridMovementDistance = 1;
     
 
@@ -39,7 +40,7 @@ public class MoveAction : BaseAction
             Vector3 moveDirection = (targetDirection - transform.position).normalized;
             transform.position += moveDirection.normalized * moveSpeed * Time.deltaTime;
 
-            unitAnimator.SetBool(isWalking, true);
+            OnMoveStart?.Invoke(this, EventArgs.Empty);
 
             float unitRotationSpeed = 30f;
             transform.forward = Vector3.Slerp(transform.forward, moveDirection, Time.deltaTime * unitRotationSpeed);
@@ -47,28 +48,22 @@ public class MoveAction : BaseAction
         }
         else
         {
-            unitAnimator.SetBool(isWalking, false);
-            isActive = false;
-            onMoveComplete();
+            OnMoveEnd?.Invoke(this, EventArgs.Empty);
+
+            OnActionComplete();
         }
     }
 
-    public void Move(GridPosition targetGridPosition, Action onMoveComplete)
-    {   
-        this.onMoveComplete = onMoveComplete;
 
-        if (GetValidActionGridPositionList().Contains(targetGridPosition))
-        {
-            this.targetDirection = LevelGrid.Instance.GetWorldPosition(targetGridPosition);
-            isActive = true;
-        }
-        else
-        {
-            onMoveComplete();
-        }
+
+    public override void TakeAction(GridPosition targetGridPosition, Action onMoveComplete)
+    {
+        OnActionStart(onMoveComplete);
+
+        this.targetDirection = LevelGrid.Instance.GetWorldPosition(targetGridPosition);                    
     }
 
-    public List<GridPosition> GetValidActionGridPositionList()
+    public override List<GridPosition> GetValidActionGridPositionList()
     {
         List<GridPosition> validActionGridPositionList = new List<GridPosition>();
 
@@ -101,5 +96,25 @@ public class MoveAction : BaseAction
     public override string GetActionName()
     {
         return "Move";
+    }
+
+    public override int GetActionPointsCost()
+    {
+        return 1;
+    }
+
+    public override EnemyAIActionScore GetEnemyAIActionScore(GridPosition gridPosition)
+    {
+        ShootAction shootAction = unit.GetShootAction();
+
+        List<GridPosition> validShootingGridPositonList = shootAction.GetValidActionGridPositionList(gridPosition);
+
+        int posibleShootingTargets = validShootingGridPositonList.Count;        
+
+        return new EnemyAIActionScore
+        {
+            gridPosition = gridPosition,
+            actionScore = posibleShootingTargets * 10,
+        };
     }
 }

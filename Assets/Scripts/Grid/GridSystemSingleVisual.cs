@@ -23,8 +23,9 @@ public class GridSystemSingleVisual : MonoBehaviour
         meshRender.enabled = false;
     }
 
-    public void Show()
-    {
+    public void Show(Material maerial)
+    {   
+        meshRender.material = maerial;  
         meshRender.enabled = true;
     }
 }

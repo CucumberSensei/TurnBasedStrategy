@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,7 +7,22 @@ public class GridSystemVisual : MonoBehaviour
 {
     public static GridSystemVisual Instance { get; private set; }
 
+    [Serializable]
+    public struct GridVisualMaterial
+    {
+        public GridVisualMaterialName name;
+        public Material material;
+    }
 
+    public enum GridVisualMaterialName
+    {
+        White,
+        Red,
+        Blue,
+        SoftRed
+    }
+
+    [SerializeField] private List<GridVisualMaterial> GridVisualMaterialsList;
     [SerializeField] private Transform GridSystemSingleVisualTransform;
     private GridSystemSingleVisual[,] gridSystemSingleVisualsArray;
     private int width;
@@ -32,19 +48,34 @@ public class GridSystemVisual : MonoBehaviour
 
         for (int x = 0; x < width; x++)
         {
-            for(int z = 0; z< height; z++)
+            for (int z = 0; z < height; z++)
             {
-                GridPosition gridPosition = new GridPosition(x,z);
+                GridPosition gridPosition = new GridPosition(x, z);
                 Vector3 worldPosition = LevelGrid.Instance.GetWorldPosition(gridPosition);
                 Transform gridVisual = Instantiate(GridSystemSingleVisualTransform, worldPosition, Quaternion.identity);
                 GridSystemSingleVisual gridSystemSingleVisual = gridVisual.GetComponent<GridSystemSingleVisual>();
-                gridSystemSingleVisualsArray[x,z] = gridSystemSingleVisual;
+                gridSystemSingleVisualsArray[x, z] = gridSystemSingleVisual;
             }
         }
+
+        UnitActionSystem.Instance.OnSelectedUnitChanged += UnitActionSystem_OnSelectedUnitChanged;
+        UnitActionSystem.Instance.OnSelectedActionChange += UnitActionSystem_OnSelectedActionChange;
+        LevelGrid.Instance.OnAnyUnitChangeGridPosition += LevelGrid_OnAnyUnitChangeGridPosition;
+
+        UpdateGridVisuals();
     }
 
-    // Update is called once per frame
-    void Update()
+    private void LevelGrid_OnAnyUnitChangeGridPosition(object sender, EventArgs e)
+    {
+        UpdateGridVisuals();
+    }
+
+    private void UnitActionSystem_OnSelectedActionChange(object sender, System.EventArgs e)
+    {
+        UpdateGridVisuals();
+    }
+
+    private void UnitActionSystem_OnSelectedUnitChanged(object sender, System.EventArgs e)
     {
         UpdateGridVisuals();
     }
@@ -55,37 +86,91 @@ public class GridSystemVisual : MonoBehaviour
         {
             for (int z = 0; z < height; z++)
             {
-                gridSystemSingleVisualsArray[x,z].Hide();
+                gridSystemSingleVisualsArray[x, z].Hide();
             }
         }
 
     }
 
-    public void ShowAllVisuals()
-    {
-        for (int x = 0; x < width; x++)
-        {
-            for (int z = 0; z < height; z++)
-            {
-                gridSystemSingleVisualsArray[x, z].Show();
-            }
-        }
-    }
-
-    public void ShowGridPositionListVisual(List<GridPosition> gridPositions)
+    public void ShowGridPositionListVisual(List<GridPosition> gridPositions, GridVisualMaterialName gridVisualName)
     {
         foreach (GridPosition gridPosition in gridPositions)
         {
-            gridSystemSingleVisualsArray[gridPosition.x, gridPosition.z].Show();
+            gridSystemSingleVisualsArray[gridPosition.x, gridPosition.z].Show(GetGridVisualMaterialFromList(gridVisualName));
         }
     }
 
     public void UpdateGridVisuals()
-    {   
-        Unit selectedUnit = UnitActionSystem.Instance.GetSelectedUnit();
+    {
         HideAllVisuals();
-        ShowGridPositionListVisual(selectedUnit.GetMoveAction().GetValidActionGridPositionList());
+
+        BaseAction selectedAction = UnitActionSystem.Instance.GetSelectedAction();
+
+        GridVisualMaterialName gridVisualMaterialName;
+
+        switch (selectedAction)
+        {
+            default:
+            case MoveAction moveAction:
+                gridVisualMaterialName = GridVisualMaterialName.White;
+                break;
+            case ShootAction shotAction:
+                gridVisualMaterialName = GridVisualMaterialName.Red;
+                ShowShootRange(shotAction.GetMaxShootDistance(), UnitActionSystem.Instance.GetSelectedUnit());
+                break;
+            case SpinAction spinAction:
+                gridVisualMaterialName = GridVisualMaterialName.Blue;
+                break;
+        }
+
+        ShowGridPositionListVisual(selectedAction.GetValidActionGridPositionList(), gridVisualMaterialName);
     }
 
+    private Material GetGridVisualMaterialFromList(GridVisualMaterialName name)
+    {
+        foreach (GridVisualMaterial gridVisualMaterial in GridVisualMaterialsList)
+        {
+            if (gridVisualMaterial.name == name)
+            {
+                return gridVisualMaterial.material;
+            }
+        }
 
+        return null;
+    }
+
+    private void ShowShootRange(int range, Unit shootingUnit)
+    {
+        List<GridPosition> shootRangeGridPositionList = new List<GridPosition>();
+
+
+        for (int x = -range; x <= range; x++)
+        {
+            for (int z = -range; z <= range; z++)
+            {
+                GridPosition offsetGrisPosition = new GridPosition(x, z);
+                GridPosition targetGridPositon = shootingUnit.GetGridPosition() + offsetGrisPosition;
+
+                if (!LevelGrid.Instance.IsValidGridPosition(targetGridPositon))
+                {
+                    continue;
+                }
+
+                Vector3 unitWordlPosition = LevelGrid.Instance.GetWorldPosition(shootingUnit.GetGridPosition());
+                Vector3 targetWorldPosition = LevelGrid.Instance.GetWorldPosition(targetGridPositon);
+
+                if (Vector3.Distance(unitWordlPosition, targetWorldPosition) > 10.5)
+                {
+                    continue;
+                }
+
+
+                shootRangeGridPositionList.Add(targetGridPositon);
+
+            }
+
+        }
+
+        ShowGridPositionListVisual(shootRangeGridPositionList, GridVisualMaterialName.SoftRed);
+    }
 }
