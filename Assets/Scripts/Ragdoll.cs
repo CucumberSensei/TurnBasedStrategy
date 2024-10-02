@@ -35,7 +35,7 @@ public class Ragdoll : MonoBehaviour
             if(child.TryGetComponent<Rigidbody>(out Rigidbody rigidbody))
             {
                 rigidbody.AddExplosionForce(explosionForce, explosionPosition, explosionRadius);
-                Debug.Log("sexo");
+                
             }
 
             ApplyExplosionToRagdoll(child,  explosionForce,  explosionPosition, explosionRadius);

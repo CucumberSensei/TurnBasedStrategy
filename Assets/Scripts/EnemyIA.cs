@@ -115,7 +115,7 @@ public class EnemyIA : MonoBehaviour
 
         if(bestAction != null && enemyUnit.TrySpendAcionPoints(bestAction))
         {
-            Debug.Log(bestEnemyAIActionScore.gridPosition + ": " + bestEnemyAIActionScore.actionScore);
+            
             bestAction.TakeAction(bestEnemyAIActionScore.gridPosition, onActionComplete);
             return true;
         }
