@@ -16,7 +16,7 @@ public class Unit : MonoBehaviour
     
     private GridPosition gridPosition;  
     private HealthSystem healthSystem;
-    [SerializeField]private int actionPoints = MAX_ACTION_POINTS;
+    [SerializeField] private int actionPoints = MAX_ACTION_POINTS;
     [SerializeField] private Transform actoinCameraSpot;
     [SerializeField] private BaseAction[] actionsArray;
     [SerializeField] private bool isEnemy;

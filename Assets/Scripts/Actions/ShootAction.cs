@@ -8,7 +8,7 @@ public class ShootAction : BaseAction
 {
     public static EventHandler<OnShootStartEventArgs> OnShootCameraStart;
     public static EventHandler OnShootCameraEnd;
-
+    public static EventHandler OnAnyShoot;
     public EventHandler<OnShootStartEventArgs> OnShootStart;
 
     public class OnShootStartEventArgs : EventArgs
@@ -25,8 +25,9 @@ public class ShootAction : BaseAction
         CoolOff,
     }
 
+    [SerializeField] private LayerMask obstaclesLayer;
     private State state;       
-    private int maxShootDistance = 5;
+    private readonly int maxShootDistance = 5;
     private float stateTimer;
     private Unit targetUnit;
     private bool canShoot = true;
@@ -102,12 +103,13 @@ public class ShootAction : BaseAction
                 break;
         }
 
-        Debug.Log(transform.ToString() + state);
+        
     }
 
     private void Shoot()
     {
-        Debug.Log("POO!!");
+        OnAnyShoot?.Invoke(this, EventArgs.Empty);
+        
         OnShootStart?.Invoke(this, new OnShootStartEventArgs{
             targetUnit = targetUnit,
             shootingUnit = unit,
@@ -148,10 +150,10 @@ public class ShootAction : BaseAction
                     continue;
                 }
 
-                Vector3 unitWordlPosition = LevelGrid.Instance.GetWorldPosition(gridPosition);
+                Vector3 unitWorldPosition = LevelGrid.Instance.GetWorldPosition(gridPosition);
                 Vector3 targetWorldPosition = LevelGrid.Instance.GetWorldPosition(targetGridPositon);
 
-                if(Vector3.Distance(unitWordlPosition, targetWorldPosition) > 10.5)
+                if(Vector3.Distance(unitWorldPosition, targetWorldPosition) > 10.5)
                 {
                     continue;
                 }                            
@@ -161,12 +163,27 @@ public class ShootAction : BaseAction
                     continue;
                 }
 
-                Unit targetUnit = LevelGrid.Instance.GetUnitAtGridPosition(targetGridPositon);
+                Unit unitAtGridPosition = LevelGrid.Instance.GetUnitAtGridPosition(targetGridPositon);
 
-                if(unit.IsEnemy() == targetUnit.IsEnemy())
+                if(unit.IsEnemy() == unitAtGridPosition.IsEnemy())
                 {
                     continue;
                 }
+
+                
+                Vector3 shootDirection = (targetWorldPosition - unitWorldPosition).normalized;
+                float unitHeigth = 1.7f;
+                float rayShootDistance = Vector3.Distance(unitWorldPosition, targetWorldPosition);
+                
+                if(Physics.Raycast(
+                    unitWorldPosition + Vector3.up * unitHeigth,
+                    shootDirection,
+                    rayShootDistance,
+                    obstaclesLayer)) 
+                {
+                    continue;
+                }
+
 
                 validActionGridPositionList.Add(targetGridPositon);
             }
@@ -183,7 +200,7 @@ public class ShootAction : BaseAction
         state = State.Aiming;
         float aimingStateTime = 1f;
         stateTimer = aimingStateTime;
-        Debug.Log(transform + "Aiming");
+        
 
         OnShootCameraStart?.Invoke(this, new OnShootStartEventArgs
         {
