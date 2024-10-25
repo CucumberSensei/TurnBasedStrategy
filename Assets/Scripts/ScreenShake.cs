@@ -4,8 +4,8 @@ using UnityEngine;
 public class ScreenShake : MonoBehaviour
 {   
     public static ScreenShake Instance { get; private set; }
-    
     private CinemachineImpulseSource impulseSource;
+    
     private void Awake()
     {   
         if (Instance != null)

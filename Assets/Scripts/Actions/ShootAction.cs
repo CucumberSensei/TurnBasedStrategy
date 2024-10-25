@@ -6,10 +6,10 @@ using UnityEngine.EventSystems;
 
 public class ShootAction : BaseAction
 {
-    public static EventHandler<OnShootStartEventArgs> OnShootCameraStart;
-    public static EventHandler OnShootCameraEnd;
-    public static EventHandler OnAnyShoot;
-    public EventHandler<OnShootStartEventArgs> OnShootStart;
+    public static event EventHandler<OnShootStartEventArgs> OnShootCameraStart;
+    public static  event EventHandler OnShootCameraEnd;
+    public static  event EventHandler OnAnyShoot;
+    public  event EventHandler<OnShootStartEventArgs> OnShootStart;
 
     public class OnShootStartEventArgs : EventArgs
     {

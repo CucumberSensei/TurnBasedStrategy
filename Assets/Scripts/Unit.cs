@@ -8,8 +8,7 @@ public class Unit : MonoBehaviour
 {
     private const int MAX_ACTION_POINTS = 3;
 
-    public static event EventHandler OnAnyActionPointChange;
-
+    public static event EventHandler OnAnyActionPointChange; 
     public static event EventHandler OnAnyUnitSpawn;
     public static event EventHandler OnAnyUnitDie;
 

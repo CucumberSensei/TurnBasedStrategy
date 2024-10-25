@@ -15,7 +15,6 @@ public class GrenadeAction : BaseAction
         }
     }
     
-    
     public override string GetActionName()
     {
         return "Grenade";
