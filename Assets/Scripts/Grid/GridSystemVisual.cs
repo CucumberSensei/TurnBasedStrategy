@@ -19,7 +19,8 @@ public class GridSystemVisual : MonoBehaviour
         White,
         Red,
         Blue,
-        SoftRed
+        SoftRed,
+        Yellow,
     }
 
     [SerializeField] private List<GridVisualMaterial> GridVisualMaterialsList;
@@ -116,7 +117,14 @@ public class GridSystemVisual : MonoBehaviour
                 break;
             case ShootAction shotAction:
                 gridVisualMaterialName = GridVisualMaterialName.Red;
-                ShowShootRange(shotAction.GetMaxShootDistance(), UnitActionSystem.Instance.GetSelectedUnit());
+                ShowActionRange(shotAction.GetMaxShootDistance(), UnitActionSystem.Instance.GetSelectedUnit());
+                break;
+            case SwordAction swordAction:
+                gridVisualMaterialName = GridVisualMaterialName.Red;
+                ShowActionRange(swordAction.GetMaxSwordDistance(), UnitActionSystem.Instance.GetSelectedUnit());
+                break;
+            case GrenadeAction grenadeAction:
+                gridVisualMaterialName = GridVisualMaterialName.Yellow;
                 break;
             case SpinAction spinAction:
                 gridVisualMaterialName = GridVisualMaterialName.Blue;
@@ -139,7 +147,7 @@ public class GridSystemVisual : MonoBehaviour
         return null;
     }
 
-    private void ShowShootRange(int range, Unit shootingUnit)
+    private void ShowActionRange(int range, Unit actionUnit)
     {
         List<GridPosition> shootRangeGridPositionList = new List<GridPosition>();
 
@@ -149,14 +157,14 @@ public class GridSystemVisual : MonoBehaviour
             for (int z = -range; z <= range; z++)
             {
                 GridPosition offsetGrisPosition = new GridPosition(x, z);
-                GridPosition targetGridPositon = shootingUnit.GetGridPosition() + offsetGrisPosition;
+                GridPosition targetGridPositon = actionUnit.GetGridPosition() + offsetGrisPosition;
 
                 if (!LevelGrid.Instance.IsValidGridPosition(targetGridPositon))
                 {
                     continue;
                 }
 
-                Vector3 unitWordlPosition = LevelGrid.Instance.GetWorldPosition(shootingUnit.GetGridPosition());
+                Vector3 unitWordlPosition = LevelGrid.Instance.GetWorldPosition(actionUnit.GetGridPosition());
                 Vector3 targetWorldPosition = LevelGrid.Instance.GetWorldPosition(targetGridPositon);
 
                 if (Vector3.Distance(unitWordlPosition, targetWorldPosition) > 10.5)

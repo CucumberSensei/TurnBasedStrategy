@@ -25,7 +25,11 @@ public class Ragdoll : MonoBehaviour
                 cloneChild.transform.rotation = child.rotation;
             }
 
-            MatchAllChildTransform(child, cloneChild);
+            if (cloneChild != null)
+            {
+                MatchAllChildTransform(child, cloneChild);
+            }
+            
         }
     }
 
